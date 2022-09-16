@@ -1,20 +1,18 @@
 /** @type {import('next').NextConfig} */
-
 const nextConfig = {
   reactStrictMode: true,
   compiler: {
     styledComponents: true,
   },
-  optimizedImages: {
+  images: {
     domains: ["firebasestorage.googleapis.com"],
     loader: "akamai",
-    path: "",
+    path: "/",
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
 };
-
 
 
 module.exports = nextConfig;
