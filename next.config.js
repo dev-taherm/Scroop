@@ -6,8 +6,8 @@ const nextConfig = {
   },
   images: {
     domains: ["firebasestorage.googleapis.com"],
-    loader: "static",
-  
+    loader: "default",
+    path: "/",
   },
   eslint: {
     ignoreDuringBuilds: true,
