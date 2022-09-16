@@ -5,9 +5,8 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
-  images: {
+  optimizedImages: {
     domains: ["firebasestorage.googleapis.com"],
-    
   },
   eslint: {
     ignoreDuringBuilds: true,
