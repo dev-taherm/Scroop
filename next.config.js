@@ -6,7 +6,7 @@ const nextConfig = {
   },
   images: {
     domains: ["firebasestorage.googleapis.com"],
-    loader: "Vercel",
+    loader: "cloudinary",
     path: "",
   },
   eslint: {
