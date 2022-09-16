@@ -6,7 +6,7 @@ const nextConfig = {
   },
   images: {
     domains: ["firebasestorage.googleapis.com"],
-    loader: "default",
+    loader: "akamai",
     path: "",
   },
   eslint: {
