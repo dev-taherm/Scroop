@@ -7,6 +7,8 @@ const nextConfig = {
   },
   optimizedImages: {
     domains: ["firebasestorage.googleapis.com"],
+    loader: "akamai",
+    path: "",
   },
   eslint: {
     ignoreDuringBuilds: true,
