@@ -190,7 +190,7 @@ const NavBar = () => {
       <h1 className="title">
         <BetterLink href="/">
           <Image
-            src="/favicon-32x32.png"
+            src="../assets/imgs/favicon-32x32.png"
             alt="Picture of the author"
             width="45"
             height="45"
