@@ -2,8 +2,9 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { signOut } from 'firebase/auth';
 
+import Image from "next/image";
 import {
-  LogoIcon,
+
   WishlistIcon,
   CartIcon,
   UserIcon,
@@ -188,7 +189,12 @@ const NavBar = () => {
     <Div>
       <h1 className="title">
         <BetterLink href="/">
-          <LogoIcon />
+          <Image
+            src="/favicon-32x32.png"
+            alt="Picture of the author"
+            width="45"
+            height="45"
+          />
           <p>Scroop </p>
         </BetterLink>
       </h1>
