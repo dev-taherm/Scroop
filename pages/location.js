@@ -15,7 +15,8 @@ import {
 } from "../utils/formValidation";
 import { auth } from "../services/firebase-config";
 import { db } from "../services/firebase-config";
-
+import getStreetByname from "../utils/getStreets";
+import {dropDownn} from "../components/Dropdown";
 const MainNav = styled.div`
   font-size: 14px;
   background-color: #f4f4f4;
@@ -209,9 +210,9 @@ const SignUp = () => {
 
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
+  const streetsData = getStreetByname();
 
   if (user) {
-    router.replace("/collections");
   }
 
   const isNameValid = nameInput.length !== 0;
@@ -293,17 +294,18 @@ const SignUp = () => {
 
   return (
     <>
+    <dropDownn />
       <Head>
         <title>Sign Up</title>
       </Head>
       <MainNav>
-        <Link href="/">القائمة الرئسية</Link> / <span>تسجيل</span>
+        <Link href="/">القائمة الرئسية</Link> / <span>موقعك</span>
       </MainNav>
       <Div>
-        {user ? (
+        {!user ? (
           <>
             <p>
-              You are signed in as <span className="bold">{user.email}</span>.
+              You are not signed in. <Link href="/signin">Sign In</Link>
             </p>
           </>
         ) : (
@@ -332,6 +334,10 @@ const SignUp = () => {
                   />
                   <span className="hint">Name cannot be empty</span>
                 </div>
+            
+
+              
+
                 <div
                   className={`form-control ${
                     startEmailValidation ? (isEmailValid ? "" : "error") : ""
