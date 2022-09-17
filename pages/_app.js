@@ -37,7 +37,7 @@ const MyApp = ({ Component, pageProps }) => {
   return (
     <div dir='rtl'>
       <Head>
-        <title>Tiptop</title>
+        <title>Scroop</title>
       </Head>
       <GlobalStyle />
       <Container>
