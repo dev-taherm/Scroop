@@ -1,9 +1,10 @@
-import Image from "next/image";
 
+
+import Image from "next/image";
 export const LogoIcon = (props) => {
   return (
     <Image
-      src='/favicon-32x32.png'
+      src="/favicon-32x32.png"
       alt="Picture of the author"
       width="45"
       height="45"

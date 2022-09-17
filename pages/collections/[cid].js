@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+
 import { useRouter } from 'next/router';
 import styled, { keyframes } from 'styled-components';
 import { useSelector } from 'react-redux';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-
+import Image from 'next/image'; 
 import getAllStaticPaths from '../../utils/getAllStaticPaths';
 import getItemById from '../../utils/getItemById';
 import Modal from '../../components/Modal';
@@ -389,9 +389,9 @@ const ItemDetails = ({ id, imageURL, brand, category, name, amount }) => {
     <>
       <MainNav>
         <Link href="/">Home</Link>
-        {' / '}
+        {" / "}
         <Link href="/collections">Collections</Link>
-        {' / '}
+        {" / "}
         <span>{` ${brand} ${name}`}</span>
       </MainNav>
       <Div>
@@ -419,7 +419,7 @@ const ItemDetails = ({ id, imageURL, brand, category, name, amount }) => {
               </div>
               {promptSize && <div className="error">Please select a size</div>}
               <div className="sizes">
-                {category === 'Jeans' ? (
+                {category === "Jeans" ? (
                   <SizePickerForBottoms
                     currentSize={size}
                     onSetSize={setSize}
@@ -435,14 +435,14 @@ const ItemDetails = ({ id, imageURL, brand, category, name, amount }) => {
                 onClick={addToWishlistHandler}
                 disabled={isWishlisted}
               >
-                {isWishlisted ? 'Wishlisted' : 'Wishlist'}
+                {isWishlisted ? "Wishlisted" : "Wishlist"}
               </button>
               <button
                 className="cart"
                 onClick={addToCartHandler}
                 disabled={isLoading}
               >
-                {isLoading ? <span className="loader"></span> : 'Add to Cart'}
+                {isLoading ? <span className="loader"></span> : "Add to Cart"}
               </button>
             </div>
           </div>
@@ -453,7 +453,7 @@ const ItemDetails = ({ id, imageURL, brand, category, name, amount }) => {
           <ModalDiv>
             <div className="title">Size Chart</div>
             <div className="table">
-              {category === 'Jeans' ? (
+              {category === "Jeans" ? (
                 <SizeChartForBottoms />
               ) : (
                 <SizeChartForTops />
