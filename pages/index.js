@@ -5,7 +5,7 @@ import styled from 'styled-components';
 const Div = styled.div`
   flex: 1;
   display: flex;
-  background-image: url("/landingPage2.png");
+  background-image: url("./landingPage2.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
