@@ -15,8 +15,9 @@ import {
 } from "../utils/formValidation";
 import { auth } from "../services/firebase-config";
 import { db } from "../services/firebase-config";
-import getStreetByname from "../utils/getStreets";
-import {dropDownn} from "../components/Dropdown";
+import SelectStreet from "../components/SelectStreet";
+import data from "./api/loactionData.json";
+
 const MainNav = styled.div`
   font-size: 14px;
   background-color: #f4f4f4;
@@ -94,6 +95,19 @@ const Div = styled.div`
       .form-control {
         margin-bottom: 20px;
 
+        .selecter {
+          display: block;
+          font: inherit;
+          color: inherit;
+          width: 100%;
+          padding: 13px 16px;
+          outline: none;
+          border: 1px #ccc solid;
+          border-radius: 6px;
+
+          
+        }
+
         input {
           display: block;
           font: inherit;
@@ -134,6 +148,7 @@ const Div = styled.div`
 
       button {
         font: inherit;
+        padding: 13px 16px;
         background: #8e2de2;
         background: -webkit-linear-gradient(to right, #8e2de2, #4a00e0);
         background: linear-gradient(to right, #8e2de2, #4a00e0);
@@ -196,12 +211,13 @@ const Div = styled.div`
   }
 `;
 
-const SignUp = () => {
+const loaction = ({ streest, streetsName }) => {
   const [nameInput, setNameInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [startNameValidation, setStartNameValidation] = useState(false);
+  const [startStreetValidation, setStartStreetValidation] = useState(false);
   const [startEmailValidation, setStartEmailValidation] = useState(false);
   const [startPasswordValidation, setStartPasswordValidation] = useState(false);
   const [startPhoneValidation, setStartPhoneValidation] = useState(false);
@@ -210,7 +226,7 @@ const SignUp = () => {
 
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
-  const streetsData = getStreetByname();
+  const getStreets = data.streets;
 
   if (user) {
   }
@@ -244,6 +260,7 @@ const SignUp = () => {
     ev.preventDefault();
 
     setStartNameValidation(true);
+    setStartStreetValidation(true);
     setStartEmailValidation(true);
     setStartPasswordValidation(true);
     setStartPhoneValidation(true);
@@ -294,7 +311,6 @@ const SignUp = () => {
 
   return (
     <>
-    <dropDownn />
       <Head>
         <title>Sign Up</title>
       </Head>
@@ -334,9 +350,13 @@ const SignUp = () => {
                   />
                   <span className="hint">Name cannot be empty</span>
                 </div>
-            
-
-              
+                <div
+                  className={`form-control ${
+                    startStreetValidation ? (isStreetValid ? "" : "error") : ""
+                  }`}
+                >
+                  <SelectStreet names={getStreets} />
+                </div>
 
                 <div
                   className={`form-control ${
@@ -429,4 +449,5 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default loaction;
+
