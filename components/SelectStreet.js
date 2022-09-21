@@ -9,7 +9,7 @@ const SelectStreet = ({names}) => {
   
   return (
     <Form.Select className="form-select" aria-label="Default select example">
-      <option>Open this select menu</option>
+      <option>أختر منطقتك</option>
       {names.map((names) => (
         <option key={names.id}>{names.name}</option>
       ))}

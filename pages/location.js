@@ -17,6 +17,8 @@ import { auth } from "../services/firebase-config";
 import { db } from "../services/firebase-config";
 import SelectStreet from "../components/SelectStreet";
 import data from "./api/loactionData.json";
+import MapMarker from "../components/MapMarker";
+
 
 const MainNav = styled.div`
   font-size: 14px;
@@ -343,7 +345,23 @@ const loaction = ({ streest, streetsName }) => {
                     type="text"
                     name="name"
                     id="name"
-                    placeholder=" اسمك"
+                    placeholder="الأسم الاول"
+                    value={nameInput}
+                    onChange={nameInputHandler}
+                    onBlur={() => setStartNameValidation(false)}
+                  />
+                  <span className="hint">Name cannot be empty</span>
+                </div>
+                <div
+                  className={`form-control ${
+                    startNameValidation ? (isNameValid ? "" : "error") : ""
+                  }`}
+                >
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    placeholder=" اسم العائلة"
                     value={nameInput}
                     onChange={nameInputHandler}
                     onBlur={() => setStartNameValidation(false)}
@@ -356,6 +374,9 @@ const loaction = ({ streest, streetsName }) => {
                   }`}
                 >
                   <SelectStreet names={getStreets} />
+                </div>
+                <div>
+                  <MapMarker />
                 </div>
 
                 <div
