@@ -13,6 +13,9 @@ import getItemById from '../utils/getItemById';
 import OrderPlaced from '../components/OrderPlaced';
 import { db } from '../services/firebase-config';
 
+ 
+
+
 const MainNav = styled.div`
   font-size: 14px;
   background-color: #f4f4f4;
@@ -192,6 +195,7 @@ const Cart = () => {
       });
     });
   };
+ 
 
   return (
     <>

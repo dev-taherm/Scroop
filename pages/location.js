@@ -2,21 +2,21 @@ import { useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import styled, { keyframes } from "styled-components";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 
 import { LogoIcon } from "../assets/icons";
 import {
   validatePhone,
+  validateStreet,
+  validateAddress,
 } from "../utils/formValidation";
 import { auth } from "../services/firebase-config";
 import { db } from "../services/firebase-config";
-import SelectStreet from "../components/SelectStreet";
 import data from "./api/loactionData.json";
-import MapMarker from "../components/MapMarker";
-import { Wrapper, Status } from "@googlemaps/react-wrapper";
-
+import Form from "react-bootstrap/Form";
+import "bootstrap/dist/css/bootstrap.css";
 
 const MainNav = styled.div`
   font-size: 14px;
@@ -104,8 +104,6 @@ const Div = styled.div`
           outline: none;
           border: 1px #ccc solid;
           border-radius: 6px;
-
-          
         }
 
         input {
@@ -212,7 +210,6 @@ const Div = styled.div`
 `;
 
 const Loaction = () => {
-  
   const [phoneInput, setPhoneInput] = useState("");
   const [addressInput, setAddressInput] = useState("");
   const [streetInput, setStreetInput] = useState("");
@@ -224,17 +221,12 @@ const Loaction = () => {
 
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
-  const getStreets = data.streets;
+  //const getStreets = data.streets;
 
-
-  if (user) {
-  }
-
-  
+  const isAddressValid =
+    addressInput.length !== 0 && validateAddress(addressInput);
+  const isStreetValid = streetInput.length !== 0 && validateStreet(streetInput);
   const isPhoneValid = phoneInput.length !== 0 && validatePhone(phoneInput);
-  const isStreetValid = phoneInput.length !== 0;
-  const isAddressValid = phoneInput.length != 0;
-
 
   const phoneInputHandler = (ev) => {
     setServerErrorMessage("");
@@ -244,15 +236,14 @@ const Loaction = () => {
     setServerErrorMessage("");
     setAddressInput(ev.target.value);
   };
-   const streetInputHandler = (ev) => {
-     setServerErrorMessage("");
-     setStreetInput({ streetInput: ev.target.value });
-   };
+  const streetInputHandler = (ev) => {
+    setServerErrorMessage("");
+    setStreetInput(ev.target.value);
+  };
 
   const submitHandler = (ev) => {
     ev.preventDefault();
 
-    
     setStartStreetValidation(true);
     setStartPhoneValidation(true);
     setStartAddressValidation(true);
@@ -264,25 +255,19 @@ const Loaction = () => {
       !serverErrorMessage
     ) {
       setIsLoading(true);
-    
-          const uid = user.uid;
-          setDoc(doc(db, uid, "address"), {
-            street:streetInput,
-            phone: phoneInput,
-            address: addressInput,
-          })
-            .then(() => {
-              setDoc(doc(db, uid, "wishlist"), {
-                items: [],
-              }).then(() => {
-                setDoc(doc(db, uid, "cart"), {
-                  items: [],
-                });
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            })
+
+      const uid = user.uid;
+      setDoc(doc(db, uid, "address"), {
+        location: arrayUnion({
+          street: streetInput,
+          phone: phoneInput,
+          address: addressInput,
+        }),
+      })
+        .then(() => {})
+        .catch((error) => {
+          console.log(error);
+        })
         .catch((error) => {
           const errorCode = error.code;
 
@@ -297,7 +282,6 @@ const Loaction = () => {
         });
     }
   };
- 
 
   return (
     <>
@@ -311,7 +295,8 @@ const Loaction = () => {
         {!user ? (
           <>
             <p>
-              You are not signed in. <Link href="/signin">Sign In</Link>
+              قم بتسجيل الدخول لاضافة موقعك الجغرافي{" "}
+              <Link href="/signin">تسجيل الدخول</Link>
             </p>
           </>
         ) : (
@@ -335,28 +320,53 @@ const Loaction = () => {
                 >
                   <input
                     type="text"
-                    name="address"
+                    name="addressDaitailes"
                     id="address"
                     placeholder=" ادخل عنوانك با التفصيل"
                     value={addressInput}
                     onChange={addressInputHandler}
                     onBlur={() => setStartAddressValidation(false)}
                   />
-                  <span className="hint">Address cannot be empty</span>
+                  <span className="hint">{`${
+                    startAddressValidation
+                      ? addressInput.length === 0
+                        ? "ادخل رقم هاتفك"
+                        : !validatePhone(addressInput)
+                        ? "خطء في رقم الهاتف"
+                        : ""
+                      : ""
+                  }`}</span>
                 </div>
                 <div
                   className={`form-control ${
                     startStreetValidation ? (isStreetValid ? "" : "error") : ""
                   }`}
                 >
-                  <SelectStreet
-                    names={getStreets}
+                  <Form.Select
                     name="street"
                     id="street"
                     onChange={streetInputHandler}
                     onBlur={() => setStartStreetValidation(false)}
                     value={streetInput}
-                  />
+                    className="form-select"
+                    aria-label="Default select example"
+                  >
+                    <option value={""}>أختر منطقتك</option>
+                    {data.streets.map((street) => (
+                      <option value={street.name} key={street.id}>
+                        {street.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <span className="hint">{`${
+                    startStreetValidation
+                      ? streetInput.length === 0
+                        ? "ادخل رقم هاتفك"
+                        : !validatePhone(streetInput)
+                        ? "خطء في رقم الهاتف"
+                        : ""
+                      : ""
+                  }`}</span>
                 </div>
 
                 <div
@@ -385,12 +395,13 @@ const Loaction = () => {
                 </div>
 
                 <button type="submit" disabled={isLoading}>
-                  {isLoading ? <span className="loader"></span> : "Sign Up"}
+                  {isLoading ? (
+                    <span className="loader"></span>
+                  ) : (
+                    "أضف موقعك الجغرافي"
+                  )}
                 </button>
               </form>
-              <p className="info">
-                Do you have an account? <Link href="/signin">Sign In</Link>
-              </p>
             </div>
           </>
         )}
@@ -400,4 +411,3 @@ const Loaction = () => {
 };
 
 export default Loaction;
-

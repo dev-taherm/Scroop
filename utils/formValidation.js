@@ -12,3 +12,9 @@ export const validatePassword = (password) => {
 export const validatePhone = (phone) => {
   return phone.length >= 9;
 };
+export const validateStreet = (street) => {
+  return street.length >= 0;
+};
+export const validateAddress = (address) => {
+  return address.length >= 15;
+};
