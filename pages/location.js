@@ -2,15 +2,12 @@ import { useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import styled, { keyframes } from "styled-components";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 
 import { LogoIcon } from "../assets/icons";
 import {
-  validateEmail,
-  validatePassword,
   validatePhone,
 } from "../utils/formValidation";
 import { auth } from "../services/firebase-config";
@@ -18,6 +15,7 @@ import { db } from "../services/firebase-config";
 import SelectStreet from "../components/SelectStreet";
 import data from "./api/loactionData.json";
 import MapMarker from "../components/MapMarker";
+import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
 
 const MainNav = styled.div`
@@ -213,16 +211,14 @@ const Div = styled.div`
   }
 `;
 
-const loaction = ({ streest, streetsName }) => {
-  const [nameInput, setNameInput] = useState("");
-  const [emailInput, setEmailInput] = useState("");
-  const [passwordInput, setPasswordInput] = useState("");
+const Loaction = () => {
+  
   const [phoneInput, setPhoneInput] = useState("");
-  const [startNameValidation, setStartNameValidation] = useState(false);
+  const [addressInput, setAddressInput] = useState("");
+  const [streetInput, setStreetInput] = useState("");
   const [startStreetValidation, setStartStreetValidation] = useState(false);
-  const [startEmailValidation, setStartEmailValidation] = useState(false);
-  const [startPasswordValidation, setStartPasswordValidation] = useState(false);
   const [startPhoneValidation, setStartPhoneValidation] = useState(false);
+  const [startAddressValidation, setStartAddressValidation] = useState(false);
   const [serverErrorMessage, setServerErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -230,58 +226,50 @@ const loaction = ({ streest, streetsName }) => {
   const user = useSelector((state) => state.auth.user);
   const getStreets = data.streets;
 
+
   if (user) {
   }
 
-  const isNameValid = nameInput.length !== 0;
-  const isEmailValid = emailInput.length !== 0 && validateEmail(emailInput);
-  const isPasswordValid =
-    passwordInput.length !== 0 && validatePassword(passwordInput);
+  
   const isPhoneValid = phoneInput.length !== 0 && validatePhone(phoneInput);
+  const isStreetValid = phoneInput.length !== 0;
+  const isAddressValid = phoneInput.length != 0;
 
-  const nameInputHandler = (ev) => {
-    setServerErrorMessage("");
-    setNameInput(ev.target.value);
-  };
 
-  const emailInputHandler = (ev) => {
-    setServerErrorMessage("");
-    setEmailInput(ev.target.value);
-  };
-
-  const passwordInputHandler = (ev) => {
-    setServerErrorMessage("");
-    setPasswordInput(ev.target.value);
-  };
   const phoneInputHandler = (ev) => {
     setServerErrorMessage("");
     setPhoneInput(ev.target.value);
   };
+  const addressInputHandler = (ev) => {
+    setServerErrorMessage("");
+    setAddressInput(ev.target.value);
+  };
+   const streetInputHandler = (ev) => {
+     setServerErrorMessage("");
+     setStreetInput({ streetInput: ev.target.value });
+   };
 
   const submitHandler = (ev) => {
     ev.preventDefault();
 
-    setStartNameValidation(true);
+    
     setStartStreetValidation(true);
-    setStartEmailValidation(true);
-    setStartPasswordValidation(true);
     setStartPhoneValidation(true);
+    setStartAddressValidation(true);
 
     if (
-      isNameValid &&
-      isEmailValid &&
-      isPasswordValid &&
+      isAddressValid &&
+      isStreetValid &&
       isPhoneValid &&
       !serverErrorMessage
     ) {
       setIsLoading(true);
-      createUserWithEmailAndPassword(auth, emailInput, passwordInput)
-        .then((userCredential) => {
-          const uid = userCredential.user.uid;
-          setDoc(doc(db, uid, "account"), {
-            name: nameInput,
-            email: emailInput,
+    
+          const uid = user.uid;
+          setDoc(doc(db, uid, "address"), {
+            street:streetInput,
             phone: phoneInput,
+            address: addressInput,
           })
             .then(() => {
               setDoc(doc(db, uid, "wishlist"), {
@@ -294,15 +282,14 @@ const loaction = ({ streest, streetsName }) => {
             })
             .catch((error) => {
               console.log(error);
-            });
-        })
+            })
         .catch((error) => {
           const errorCode = error.code;
 
-          if (errorCode === "auth/email-already-in-use") {
-            setServerErrorMessage("Email address already in use.");
+          if (errorCode === error) {
+            setServerErrorMessage(error);
           } else {
-            setServerErrorMessage("Something went wrong.");
+            setServerErrorMessage(error);
           }
         })
         .finally(() => {
@@ -310,11 +297,12 @@ const loaction = ({ streest, streetsName }) => {
         });
     }
   };
+ 
 
   return (
     <>
       <Head>
-        <title>Sign Up</title>
+        <title>Loaction</title>
       </Head>
       <MainNav>
         <Link href="/">القائمة الرئسية</Link> / <span>موقعك</span>
@@ -338,71 +326,39 @@ const loaction = ({ streest, streetsName }) => {
               <form className="form" onSubmit={submitHandler}>
                 <div
                   className={`form-control ${
-                    startNameValidation ? (isNameValid ? "" : "error") : ""
+                    startAddressValidation
+                      ? isAddressValid
+                        ? ""
+                        : "error"
+                      : ""
                   }`}
                 >
                   <input
                     type="text"
-                    name="name"
-                    id="name"
-                    placeholder="الأسم الاول"
-                    value={nameInput}
-                    onChange={nameInputHandler}
-                    onBlur={() => setStartNameValidation(false)}
+                    name="address"
+                    id="address"
+                    placeholder=" ادخل عنوانك با التفصيل"
+                    value={addressInput}
+                    onChange={addressInputHandler}
+                    onBlur={() => setStartAddressValidation(false)}
                   />
-                  <span className="hint">Name cannot be empty</span>
-                </div>
-                <div
-                  className={`form-control ${
-                    startNameValidation ? (isNameValid ? "" : "error") : ""
-                  }`}
-                >
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    placeholder=" اسم العائلة"
-                    value={nameInput}
-                    onChange={nameInputHandler}
-                    onBlur={() => setStartNameValidation(false)}
-                  />
-                  <span className="hint">Name cannot be empty</span>
+                  <span className="hint">Address cannot be empty</span>
                 </div>
                 <div
                   className={`form-control ${
                     startStreetValidation ? (isStreetValid ? "" : "error") : ""
                   }`}
                 >
-                  <SelectStreet names={getStreets} />
-                </div>
-                <div>
-                  <MapMarker />
+                  <SelectStreet
+                    names={getStreets}
+                    name="street"
+                    id="street"
+                    onChange={streetInputHandler}
+                    onBlur={() => setStartStreetValidation(false)}
+                    value={streetInput}
+                  />
                 </div>
 
-                <div
-                  className={`form-control ${
-                    startEmailValidation ? (isEmailValid ? "" : "error") : ""
-                  }`}
-                >
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="Email,بريدك الأكتروني"
-                    value={emailInput}
-                    onChange={emailInputHandler}
-                    onBlur={() => setStartEmailValidation(false)}
-                  />
-                  <span className="hint">{`${
-                    startEmailValidation
-                      ? emailInput.length === 0
-                        ? "Email cannot be empty"
-                        : !validateEmail(emailInput)
-                        ? "Email is not valid"
-                        : ""
-                      : ""
-                  }`}</span>
-                </div>
                 <div
                   className={`form-control ${
                     startPhoneValidation ? (isPhoneValid ? "" : "error") : ""
@@ -427,34 +383,7 @@ const loaction = ({ streest, streetsName }) => {
                       : ""
                   }`}</span>
                 </div>
-                <div
-                  className={`form-control ${
-                    startPasswordValidation
-                      ? isPasswordValid
-                        ? ""
-                        : "error"
-                      : ""
-                  }`}
-                >
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    placeholder="كلمة المرور"
-                    value={passwordInput}
-                    onChange={passwordInputHandler}
-                    onBlur={() => setStartPasswordValidation(false)}
-                  />
-                  <span className="hint">{`${
-                    startPasswordValidation
-                      ? passwordInput.length === 0
-                        ? "Password cannot be empty"
-                        : !validatePassword(passwordInput)
-                        ? "Min 6 characters required"
-                        : ""
-                      : ""
-                  }`}</span>
-                </div>
+
                 <button type="submit" disabled={isLoading}>
                   {isLoading ? <span className="loader"></span> : "Sign Up"}
                 </button>
@@ -470,5 +399,5 @@ const loaction = ({ streest, streetsName }) => {
   );
 };
 
-export default loaction;
+export default Loaction;
 
