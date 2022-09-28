@@ -6,6 +6,7 @@ import store from '../store';
 import NavBar from '../components/NavBar';
 import ReactReduxFirebaseWrapper from '../components/ReactReduxFirebaseProvider';
 
+
 const GlobalStyle = createGlobalStyle`
   * {
     margin: 0;
@@ -35,20 +36,22 @@ const Container = styled.div`
 
 const MyApp = ({ Component, pageProps }) => {
   return (
-    <div dir='rtl'>
-      <Head>
-        <title>Scroop</title>
-      </Head>
-      <GlobalStyle />
-      <Container>
-        <Provider store={store}>
-          <ReactReduxFirebaseWrapper>
-            <NavBar />
-            <Component {...pageProps} />
-          </ReactReduxFirebaseWrapper>
-        </Provider>
-      </Container>
-    </div>
+    <>
+      <div dir="rtl">
+        <Head>
+          <title>Scroop</title>
+        </Head>
+        <GlobalStyle />
+        <Container>
+          <Provider store={store}>
+            <ReactReduxFirebaseWrapper>
+              <NavBar />
+              <Component {...pageProps} />
+            </ReactReduxFirebaseWrapper>
+          </Provider>
+        </Container>
+      </div>
+    </>
   );
 };
 

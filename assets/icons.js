@@ -8,6 +8,25 @@ export const LogoIcon = (props) => {
       alt="Picture of the author"
       width="45"
       height="45"
+         flex="1"
+    display="flex" 
+    flex-direction="column"
+    justify-content="center"
+    align-items="left"
+    padding="16px" 
+    padding-left="140px" 
+    padding-right="820px"
+    />
+  );
+};
+export const Landing = (props) => {
+  return (
+    <Image
+      src="/landing.jpg"
+      alt="Picture of the author"
+      width="45"
+      height="45"
+   
     />
   );
 };
