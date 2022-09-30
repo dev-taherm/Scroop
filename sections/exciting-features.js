@@ -1,10 +1,10 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx, Box, Container, Image } from 'theme-ui';
-import SectionHeading from 'components/section-heading';
-import Accordion from 'components/accordion/accordion';
-import feature from 'assets/images/feature.png';
-import emoji from 'assets/images/icons/emoji-2.png';
+import SectionHeading from '/components/section-heading';
+import Accordion from '/components/accordion/accordion';
+import feature from '/assets/images/feature.png';
+import emoji from '/assets/images/icons/emoji-2.png';
 
 const data = [
   {

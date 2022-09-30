@@ -1,15 +1,15 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx, Box, Container } from 'theme-ui';
-import SectionHeading from 'components/section-heading';
-import Feature from 'components/cards/feature';
+import SectionHeading from '/components/section-heading';
+import Feature from '/components/cards/feature';
 
-import icon1 from 'assets/images/icons/1.png';
-import icon2 from 'assets/images/icons/2.png';
-import icon3 from 'assets/images/icons/3.png';
-import icon4 from 'assets/images/icons/4.png';
-import icon5 from 'assets/images/icons/5.png';
-import icon6 from 'assets/images/icons/6.png';
+import icon1 from '/assets/images/icons/1.png';
+import icon2 from '/assets/images/icons/2.png';
+import icon3 from '/assets/images/icons/3.png';
+import icon4 from '/assets/images/icons/4.png';
+import icon5 from '/assets/images/icons/5.png';
+import icon6 from '/assets/images/icons/6.png';
 
 const data = [
   {

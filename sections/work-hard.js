@@ -1,11 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx, Box, Flex, Container, Image, Text } from 'theme-ui';
-import SectionHeading from 'components/section-heading';
-import { LearnMore } from 'components/link';
-import workHard from 'assets/images/work-hard.png';
-import emoji from 'assets/images/icons/emoji.png';
-import check from 'assets/images/icons/check-circle.png';
+import SectionHeading from '/components/section-heading';
+import { LearnMore } from '/components/link';
+import workHard from '/assets/images/work-hard.png';
+import emoji from '/assets/images/icons/emoji.png';
+import check from '/assets/images/icons/check-circle.png';
 
 const data = [
   {
