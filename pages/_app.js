@@ -4,6 +4,7 @@ import Head from 'next/head';
 
 import store from '../store';
 import NavBar from '../components/NavBar';
+import Footer from '../components/Footer';
 import ReactReduxFirebaseWrapper from '../components/ReactReduxFirebaseProvider';
 
 
@@ -51,6 +52,7 @@ const MyApp = ({ Component, pageProps }) => {
           </Provider>
         </Container>
       </div>
+      <Footer />
     </>
   );
 };

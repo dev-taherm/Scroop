@@ -24,8 +24,8 @@ export const Landing = (props) => {
     <Image
       src="/landing.jpg"
       alt="Picture of the author"
-      width="45"
-      height="45"
+      width="100 %"
+      height="100 %"
    
     />
   );

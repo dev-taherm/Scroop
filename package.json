@@ -20,6 +20,7 @@
     "imagemin-optipng": "^8.0.0",
     "imagemin-svgo": "^10.0.1",
     "link": "^1.5.1",
+    "mdb-react-ui-kit": "^4.2.0",
     "next": "12.3",
     "next-optimized-images": "^2.6.2",
     "polished": "^4.2.2",
