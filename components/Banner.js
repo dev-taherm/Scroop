@@ -16,9 +16,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import { rgba } from "polished";
 import Image from "next/image";
 import Link from "next/link";
-import paypal from "/assets/imgs/paypal.png";
-import google from "/assets/imgs/google.png";
-import dropbox from "/assets/imgs/dropbox.png";
+
 
 
 
