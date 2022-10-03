@@ -31,12 +31,11 @@ const Banner = () => {
           </Box>
           <Box sx={styles.content}>
             <Heading as="h1">
-              Build your audience &amp; grow your business online smarter
+              أزياء مستوحاة تاريخيًا ، سهلة الخياطة ، سهلة الحب! جلب لك بواسطة
+              سكرووب
             </Heading>
             <Text as="p">
-              Get your blood tests delivered at let home collect sample from the
-              victory of the managements that supplies best design system
-              guidelines ever.
+              نرسل فستانك المفضل إلى منزلك ، ارتدي الرائعًا لتكون رائعًا.
             </Text>
             <Box sx={styles.subscribe}>
               <Link as="link" variant="styles.srOnly" href="/collections">
@@ -67,7 +66,7 @@ const styles = {
     textAlign: ["center", null, null, "right", "right"],
     justifyContent: "right",
     position: "relative",
-    top: "0px",    
+    top: "0px",
     backdropFilter: "blur(5px)",
     h1: {
       color: "textSecondary",
@@ -78,7 +77,7 @@ const styles = {
     },
     p: {
       maxWidth: [450, null, null, "none", 450],
-      fontSize: ["14px", null, "18px", 17, "16px", "15px", "18px"],
+      fontSize: ["34px", "34px", "34px", "25px", "25px", "25px", "25px"],
       lineHeight: [1.87, 1.87, 2.33, 2.33, 2],
       mt: ["25px", null, null, null, 4],
     },

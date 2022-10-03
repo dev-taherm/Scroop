@@ -194,6 +194,7 @@ const NavBar = () => {
             alt="Picture of the author"
             width="45"
             height="45"
+            
           />
           <p>Scroop </p>
         </BetterLink>

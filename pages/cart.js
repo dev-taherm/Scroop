@@ -1,20 +1,34 @@
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import Link from 'next/link';
-import Head from 'next/head';
-import styled, { keyframes } from 'styled-components';
-import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
-import uniqid from 'uniqid';
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import Link from "next/link";
+import Head from "next/head";
+import styled, { keyframes } from "styled-components";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import uniqid from "uniqid";
+import { database } from "../services/firebase-config";
+import { ref, child, get } from "firebase/database";
 
-import EmptyCart from '../components/EmptyCart';
-import CartItemCard from '../components/CartItemCard';
-import SignInPromptTemplate from '../components/SignInPromptTemplate';
-import getItemById from '../utils/getItemById';
-import OrderPlaced from '../components/OrderPlaced';
-import { db } from '../services/firebase-config';
+import EmptyCart from "../components/EmptyCart";
+import CartItemCard from "../components/CartItemCard";
+import SignInPromptTemplate from "../components/SignInPromptTemplate";
+import getItemById from "../utils/getItemById";
+import OrderPlaced from "../components/OrderPlaced";
+import { db } from "../services/firebase-config";
 
- 
-
+const eidtLink = {
+  display: "block",
+  marginTop: "40px",
+  padding: "14px 42px",
+  textDecoration: "none",
+  fontWeight: "500",
+  border: "none",
+  borderRadius: "10px",
+  background: "#8e2de2",
+  background: "-webkit-linear-gradient(to right, #8e2de2, #4a00e0)",
+  background: "linear-gradient(to left, #8e2de2, #4a00e0)",
+  color: "white",
+  boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+};
 
 const MainNav = styled.div`
   font-size: 14px;
@@ -117,6 +131,20 @@ const Div = styled.div`
           animation: ${rotation} 1s linear infinite;
         }
       }
+      a {
+        display: block;
+        margin-top: 40px;
+        padding: 14px 42px;
+        text-decoration: none;
+        font-weight: 500;
+        border: none;
+        border-radius: 10px;
+        background: #eb1d36;
+        background: -webkit-linear-gradient(to right, #eb1d36, FA9494);
+        background: linear-gradient(to left, #eb1d36, FA9494);
+        color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
     }
   }
 
@@ -153,6 +181,7 @@ const Cart = () => {
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const cartItems = useSelector((state) => state.cart.items);
+  const [addressExists, setAddressExists] = useState("");
 
   useEffect(() => {
     const items = cartItems.map((item) => {
@@ -176,7 +205,22 @@ const Cart = () => {
   );
   const discountValue = Math.floor(priceValue / 5);
   const totalValue = priceValue - discountValue;
-
+  if (user) {
+    const uid = user.uid;
+    const dbRef = ref(database);
+    get(child(dbRef, `address/${uid}`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          console.log(snapshot.val());
+          setAddressExists(snapshot.exists());
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 
   const placeOrderHandler = () => {
     setIsPlacingOrder(true);
@@ -195,7 +239,6 @@ const Cart = () => {
       });
     });
   };
- 
 
   return (
     <>
@@ -243,17 +286,26 @@ const Cart = () => {
                     <div className="title">Total Amount</div>
                     <div className="amount">YR. {totalValue}</div>
                   </div>
-                  <button
-                    className="order"
-                    onClick={placeOrderHandler}
-                    disabled={isPlacingOrder}
-                  >
-                    {isPlacingOrder ? (
-                      <span className="loader"></span>
-                    ) : (
-                      'Place Order'
-                    )}
-                  </button>
+                  {addressExists ? (
+                    <>
+                      <Link href="./location">تعديل الموقعك الجغرافي </Link>
+                      <button
+                        className="order"
+                        onClick={placeOrderHandler}
+                        disabled={isPlacingOrder}
+                      >
+                        {isPlacingOrder ? (
+                          <span className="loader"></span>
+                        ) : (
+                          "تأكيد"
+                        )}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="./location">أضافة موقعك الجغرافي </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </Div>

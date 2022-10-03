@@ -3,6 +3,7 @@ import Link from "next/link";
 import Head from "next/head";
 import styled, { keyframes } from "styled-components";
 import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { ref, set, child, get } from "firebase/database";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 
@@ -14,6 +15,7 @@ import {
 } from "../utils/formValidation";
 import { auth } from "../services/firebase-config";
 import { db } from "../services/firebase-config";
+import { database } from "../services/firebase-config";
 import data from "./api/loactionData.json";
 import Form from "react-bootstrap/Form";
 import "bootstrap/dist/css/bootstrap.css";
@@ -211,6 +213,7 @@ const Div = styled.div`
 
 const Loaction = () => {
   const [phoneInput, setPhoneInput] = useState("");
+  const [addressExists, setAddressExists] = useState("")
   const [addressInput, setAddressInput] = useState("");
   const [streetInput, setStreetInput] = useState("");
   const [startStreetValidation, setStartStreetValidation] = useState(false);
@@ -228,6 +231,9 @@ const Loaction = () => {
   const isStreetValid = streetInput.length !== 0 && validateStreet(streetInput);
   const isPhoneValid = phoneInput.length !== 0 && validatePhone(phoneInput);
 
+
+   
+
   const phoneInputHandler = (ev) => {
     setServerErrorMessage("");
     setPhoneInput(ev.target.value);
@@ -239,6 +245,25 @@ const Loaction = () => {
   const streetInputHandler = (ev) => {
     setServerErrorMessage("");
     setStreetInput(ev.target.value);
+  };
+
+
+  if (user)
+  {
+    const uid = user.uid;
+const dbRef = ref(database);
+get(child(dbRef, `address/${uid}`))
+  .then((snapshot) => {
+    if (snapshot.exists()) {
+      console.log(snapshot.val());
+      setAddressExists(snapshot.exists());
+    } else {
+      console.log("No data available");
+    }
+  })
+  .catch((error) => {
+    console.error(error);
+  });
   };
 
   const submitHandler = (ev) => {
@@ -255,14 +280,15 @@ const Loaction = () => {
       !serverErrorMessage
     ) {
       setIsLoading(true);
-
-      const uid = user.uid;
-      setDoc(doc(db, uid, "address"), {
-        location: arrayUnion({
+         const email = user.email;
+         const uid = user.uid;
+     
+      set(ref(database, "address/" + uid), {
+          email: email,
           street: streetInput,
           phone: phoneInput,
           address: addressInput,
-        }),
+        
       })
         .then(() => {})
         .catch((error) => {
@@ -304,6 +330,15 @@ const Loaction = () => {
             <div className="box">
               <div className="title">
                 <LogoIcon />
+                { addressExists ? (
+                  <p>
+              تعديل الموقع الجغرافي{" "}
+              
+            </p>
+                ):(  <p>
+       أضافة موقع جغرافي{" "}
+              
+            </p>)}
               </div>
               {serverErrorMessage && (
                 <div className="server">{serverErrorMessage}</div>
@@ -397,8 +432,10 @@ const Loaction = () => {
                 <button type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <span className="loader"></span>
+                  ) : addressExists ? (
+                    "عدل  "
                   ) : (
-                    "أضف موقعك الجغرافي"
+                    "أضف "
                   )}
                 </button>
               </form>
