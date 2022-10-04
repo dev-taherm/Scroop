@@ -22,6 +22,7 @@ const Div = styled.div`
   justify-content: space-between;
   padding: 0 16px;
   position: relative;
+  box-shadow: 0px 22px 18px -5px rgba(255, 230, 247, 1);
 
   .title {
     margin: 16px 0;
@@ -194,18 +195,12 @@ const NavBar = () => {
             alt="Picture of the author"
             width="45"
             height="45"
-            
           />
-          <p>Scroop </p>
+          <p style={{ color: "#4a00e0" }}>Scroop </p>
         </BetterLink>
       </h1>
       <div className="box">
         <ul className="nav-items">
-          <li className="nav-item">
-            <BetterLink href="/location">
-              <AddressIcon />
-            </BetterLink>
-          </li>
           <li className="nav-item">
             <BetterLink href="/wishlist">
               <WishlistIcon />

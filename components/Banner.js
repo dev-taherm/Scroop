@@ -116,7 +116,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "left",
     position: ["absolute", null, null, null, null, null],
-    top: "50px",
+    top: "0px",
     left: "0px",
     img: {
       maxWidth: ["100%", null, null, "80%", "100%"],

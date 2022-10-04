@@ -29,7 +29,10 @@ const Footer =()=> {
       className="text-center text-lg-start text-muted"
       dir="rtl"
     >
-      <section className="d-flex justify-content-center justify-content-lg-between p-4 border-bottom">
+      <section
+        style={{ backgroundColor: "#FFABE1" }}
+        className="d-flex justify-content-center justify-content-lg-between p-4 border-bottom"
+      >
         <div className="me-5 d-none d-lg-block">
           <span style={{ fontSize: "1.5em" }}>
             تواصل معنا عبر التواصل الاجتماعي
@@ -132,7 +135,7 @@ const Footer =()=> {
         </MDBContainer>
       </section>
 
-      <div className="text-center p-4">
+      <div className="text-center p-4" style={{ backgroundColor: "#937DC2" }}>
         © 2022 Copyright:
         <a className="text-reset fw-bold" href="https://dev-taherm.github.io/">
           Dev-Taher

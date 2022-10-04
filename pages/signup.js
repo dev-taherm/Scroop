@@ -2,7 +2,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import styled, { keyframes } from 'styled-components';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  
+} from "firebase/auth";
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
@@ -251,33 +254,43 @@ const SignUp = () => {
     if (isNameValid && isEmailValid && isPasswordValid && isPhoneValid && !serverErrorMessage) {
       setIsLoading(true);
       createUserWithEmailAndPassword(auth, emailInput, passwordInput)
+       
         .then((userCredential) => {
           const uid = userCredential.user.uid;
-          setDoc(doc(db, uid, 'account'), {
+          setDoc(doc(db, uid, "account"), {
             name: nameInput,
             email: emailInput,
-            phone: phoneInput
+            phone: phoneInput,
           })
             .then(() => {
-              setDoc(doc(db, uid, 'wishlist'), {
+              setDoc(doc(db, uid, "wishlist"), {
                 items: [],
               }).then(() => {
-                setDoc(doc(db, uid, 'cart'), {
+                setDoc(doc(db, uid, "cart"), {
                   items: [],
                 });
               });
             })
             .catch((error) => {
               console.log(error);
+            })
+            .catch((error) => {
+              const errorCode = error.code;
+
+              if (errorCode === "auth/email-already-in-use") {
+                setServerErrorMessage("Email address already in use.");
+              } else {
+                setServerErrorMessage("Something went wrong.");
+              }
             });
         })
         .catch((error) => {
           const errorCode = error.code;
 
-          if (errorCode === 'auth/email-already-in-use') {
-            setServerErrorMessage('Email address already in use.');
+          if (errorCode === "auth/email-already-in-use") {
+            setServerErrorMessage("Email address already in use.");
           } else {
-            setServerErrorMessage('Something went wrong.');
+            setServerErrorMessage("Something went wrong.");
           }
         })
         .finally(() => {
