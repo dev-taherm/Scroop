@@ -4,7 +4,7 @@ import Head from 'next/head';
 import styled, { keyframes } from 'styled-components';
 import {
   createUserWithEmailAndPassword,
-  
+  signInWithPhoneNumber,
 } from "firebase/auth";
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';

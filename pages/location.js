@@ -2,7 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import styled, { keyframes } from "styled-components";
-import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { ref, set, child, get } from "firebase/database";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
@@ -213,7 +213,10 @@ const Div = styled.div`
 
 const Loaction = () => {
   const [phoneInput, setPhoneInput] = useState("");
-  const [addressExists, setAddressExists] = useState("")
+  const [otp, setotp] = useState("");
+  const [show, setshow] = useState(false);
+  const [final, setfinal] = useState("");
+  const [addressExists, setAddressExists] = useState("");
   const [addressInput, setAddressInput] = useState("");
   const [streetInput, setStreetInput] = useState("");
   const [startStreetValidation, setStartStreetValidation] = useState(false);
@@ -221,6 +224,7 @@ const Loaction = () => {
   const [startAddressValidation, setStartAddressValidation] = useState(false);
   const [serverErrorMessage, setServerErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTopp, setIsTopp] = useState(false);
 
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
@@ -230,9 +234,6 @@ const Loaction = () => {
     addressInput.length !== 0 && validateAddress(addressInput);
   const isStreetValid = streetInput.length !== 0 && validateStreet(streetInput);
   const isPhoneValid = phoneInput.length !== 0 && validatePhone(phoneInput);
-
-
-   
 
   const phoneInputHandler = (ev) => {
     setServerErrorMessage("");
@@ -246,25 +247,66 @@ const Loaction = () => {
     setServerErrorMessage("");
     setStreetInput(ev.target.value);
   };
-
-
-  if (user)
-  {
-    const uid = user.uid;
-const dbRef = ref(database);
-get(child(dbRef, `address/${uid}`))
-  .then((snapshot) => {
-    if (snapshot.exists()) {
-      console.log(snapshot.val());
-      setAddressExists(snapshot.exists());
-    } else {
-      console.log("No data available");
-    }
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+  
+  const signin = () => {
+    const phoneInputk = "+967" + phoneInput;
+    if (phoneInputk === "" || phoneInputk.length < 14) return;
+    const appVerifier = window.recaptchaVerifier;
+    appVerifier = new RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "normal ",
+        callback: (response) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+          signInWithPhoneNumber(auth, phoneInputk, appVerifier)
+            .then((confirmationResult) => {
+              // SMS sent. Prompt user to type the code from the message, then sign the
+              // user in with confirmationResult.confirm(code).
+              setfinal(confirmationResult);
+              setshow(true);
+              console.log("code sent");
+              // ...
+            })
+            .catch((error) => {
+              // Error; SMS not sent
+              console.log(error);
+              // ...
+            });
+        },
+      },
+      auth
+    );
   };
+
+  const ValidateOtp = () => {
+    if (otp === null || final === null) return;
+    final
+      .confirm(otp)
+      .then((result) => {
+        // success
+        setIsTopp(true);
+      })
+      .catch((err) => {
+        console.log("Wrong code");
+      });
+  };
+
+  if (user) {
+    const uid = user.uid;
+    const dbRef = ref(database);
+    get(child(dbRef, `address/${uid}`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          console.log(snapshot.val());
+          setAddressExists(snapshot.exists());
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 
   const submitHandler = (ev) => {
     ev.preventDefault();
@@ -277,18 +319,18 @@ get(child(dbRef, `address/${uid}`))
       isAddressValid &&
       isStreetValid &&
       isPhoneValid &&
+      isTopp &&
       !serverErrorMessage
     ) {
       setIsLoading(true);
-         const email = user.email;
-         const uid = user.uid;
-     
+      const email = user.email;
+      const uid = user.uid;
+
       set(ref(database, "address/" + uid), {
-          email: email,
-          street: streetInput,
-          phone: phoneInput,
-          address: addressInput,
-        
+        email: email,
+        street: streetInput,
+        phone: phoneInput,
+        address: addressInput,
       })
         .then(() => {})
         .catch((error) => {
@@ -330,15 +372,11 @@ get(child(dbRef, `address/${uid}`))
             <div className="box">
               <div className="title">
                 <LogoIcon />
-                { addressExists ? (
-                  <p>
-              تعديل الموقع الجغرافي{" "}
-              
-            </p>
-                ):(  <p>
-       أضافة موقع جغرافي{" "}
-              
-            </p>)}
+                {addressExists ? (
+                  <p>تعديل الموقع الجغرافي </p>
+                ) : (
+                  <p>أضافة موقع جغرافي </p>
+                )}
               </div>
               {serverErrorMessage && (
                 <div className="server">{serverErrorMessage}</div>
@@ -428,16 +466,26 @@ get(child(dbRef, `address/${uid}`))
                       : ""
                   }`}</span>
                 </div>
-
-                <button type="submit" disabled={isLoading}>
-                  {isLoading ? (
-                    <span className="loader"></span>
-                  ) : addressExists ? (
-                    "عدل  "
-                  ) : (
-                    "أضف "
-                  )}
-                </button>
+                <div id="recaptcha-container"></div>
+                <button onClick={signin}>Send OTP</button>
+                <div style={{ display: show ? "block" : "none" }}>
+                  <input
+                    type="text"
+                    placeholder={"Enter your OTP"}
+                    onChange={(e) => {
+                      setotp(e.target.value);
+                    }}
+                  ></input>
+                  <button onClick={ValidateOtp} disabled={isLoading}>
+                    {isLoading ? (
+                      <span className="loader"></span>
+                    ) : addressExists ? (
+                      "عدل  "
+                    ) : (
+                      "أضف "
+                    )}
+                  </button>
+                </div>
               </form>
             </div>
           </>
