@@ -30,7 +30,7 @@ const Footer =()=> {
       dir="rtl"
     >
       <section
-        style={{ backgroundColor: "#FFABE1" }}
+       
         className="d-flex justify-content-center justify-content-lg-between p-4 border-bottom"
       >
         <div className="me-5 d-none d-lg-block">
@@ -135,7 +135,7 @@ const Footer =()=> {
         </MDBContainer>
       </section>
 
-      <div className="text-center p-4" style={{ backgroundColor: "#937DC2" }}>
+      <div className="text-center p-4">
         © 2022 Copyright:
         <a className="text-reset fw-bold" href="https://dev-taherm.github.io/">
           Dev-Taher

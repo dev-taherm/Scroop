@@ -22,7 +22,7 @@ const Div = styled.div`
   justify-content: space-between;
   padding: 0 16px;
   position: relative;
-  box-shadow: 0px 22px 18px -5px rgba(255, 230, 247, 1);
+  box-shadow: 0px 22px 18px -5px rgba(0, 0, 0, 0.05);
 
   .title {
     margin: 16px 0;
@@ -193,8 +193,8 @@ const NavBar = () => {
           <Image
             src="./favicon-32x32.png"
             alt="Picture of the author"
-            width="45"
-            height="45"
+            width="40"
+            height="40"
           />
           <p style={{ color: "#4a00e0" }}>Scroop </p>
         </BetterLink>
