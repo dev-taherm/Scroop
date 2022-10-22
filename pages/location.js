@@ -226,6 +226,8 @@ const Loaction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isTopp, setIsTopp] = useState(false);
 
+  const counteryCode ="+967";
+
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
   //const getStreets = data.streets;
@@ -247,50 +249,75 @@ const Loaction = () => {
     setServerErrorMessage("");
     setStreetInput(ev.target.value);
   };
-  
-  const signin = () => {
-    const phoneInputk = "+967" + phoneInput;
-    if (phoneInputk === "" || phoneInputk.length < 14) return;
-    const appVerifier = window.recaptchaVerifier;
-    appVerifier = new RecaptchaVerifier(
+  const generateRecaptcha = () => {
+    window.recaptchaVerifier = new RecaptchaVerifier(
       "recaptcha-container",
       {
-        size: "normal ",
+        size: "invisible",
         callback: (response) => {
           // reCAPTCHA solved, allow signInWithPhoneNumber.
-          signInWithPhoneNumber(auth, phoneInputk, appVerifier)
-            .then((confirmationResult) => {
-              // SMS sent. Prompt user to type the code from the message, then sign the
-              // user in with confirmationResult.confirm(code).
-              setfinal(confirmationResult);
-              setshow(true);
-              console.log("code sent");
-              // ...
-            })
-            .catch((error) => {
-              // Error; SMS not sent
-              console.log(error);
-              // ...
-            });
+          // ...
         },
       },
       auth
     );
+  }
+
+  const sign = (e) => {
+
+    setStartStreetValidation(true);
+    setStartPhoneValidation(true);
+    setStartAddressValidation(true);
+
+    e.preventDefault();
+    if (
+      isAddressValid &&
+      isStreetValid &&
+      isPhoneValid &&
+      !serverErrorMessage
+    ) {
+      setshow(true);
+      generateRecaptcha();
+      let appVerifier = window.recaptchaVerifier;
+      signInWithPhoneNumber(auth, phoneInput, appVerifier)
+        .then((confirmationResult) => {
+          // SMS sent. Prompt user to type the code from the message, then sign the
+          // user in with confirmationResult.confirm(code).
+          window.confirmationResult = confirmationResult;
+          console.log("code sent");
+          // ...
+        })
+        .catch((error) => {
+          // Error; SMS not sent
+          // ...
+          console.log(error);
+        });
+    }
   };
 
-  const ValidateOtp = () => {
-    if (otp === null || final === null) return;
-    final
-      .confirm(otp)
-      .then((result) => {
-        // success
-        setIsTopp(true);
-      })
-      .catch((err) => {
-        console.log("Wrong code");
-      });
-  };
+  const ValidateOtp = (e) => {
+    let otp = e.target.value;
+    setotp(otp);
+    if (otp.length === 6) {
+      console.log(otp);
 
+      let confirmationResult= window.confirmationResult;
+
+      confirmationResult
+        .confirm(otp)
+        .then((result) => {
+          // User signed in successfully.
+          const user = result.user;
+          addAddress();
+          // ...
+        })
+        .catch((error) => {
+          // User couldn't sign in (bad verification code?)
+          // ...
+          console.log(error);
+        });
+    }
+  };
   if (user) {
     const uid = user.uid;
     const dbRef = ref(database);
@@ -308,18 +335,15 @@ const Loaction = () => {
       });
   }
 
-  const submitHandler = (ev) => {
-    ev.preventDefault();
+  const addAddress = () => {
+    
 
-    setStartStreetValidation(true);
-    setStartPhoneValidation(true);
-    setStartAddressValidation(true);
+    
 
     if (
       isAddressValid &&
       isStreetValid &&
       isPhoneValid &&
-      isTopp &&
       !serverErrorMessage
     ) {
       setIsLoading(true);
@@ -381,7 +405,7 @@ const Loaction = () => {
               {serverErrorMessage && (
                 <div className="server">{serverErrorMessage}</div>
               )}
-              <form className="form" onSubmit={submitHandler}>
+              <form className="form" >
                 <div
                   className={`form-control ${
                     startAddressValidation
@@ -451,6 +475,7 @@ const Loaction = () => {
                     type="phone"
                     name="phone"
                     id="phone"
+                    dir="ltr"
                     placeholder="رقم هاتفك "
                     value={phoneInput}
                     onChange={phoneInputHandler}
@@ -467,16 +492,21 @@ const Loaction = () => {
                   }`}</span>
                 </div>
                 <div id="recaptcha-container"></div>
-                <button onClick={signin}>Send OTP</button>
+                <button type="submit" onClick={sign}>
+                  Send OTP
+                </button>
                 <div style={{ display: show ? "block" : "none" }}>
                   <input
                     type="text"
                     placeholder={"Enter your OTP"}
-                    onChange={(e) => {
-                      setotp(e.target.value);
-                    }}
+                    onChange={ValidateOtp}
+                    value={otp}
                   ></input>
-                  <button onClick={ValidateOtp} disabled={isLoading}>
+                  <button
+                    type="submit"
+                    onClick={ValidateOtp}
+                    disabled={isLoading}
+                  >
                     {isLoading ? (
                       <span className="loader"></span>
                     ) : addressExists ? (
