@@ -2,10 +2,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import styled, { keyframes } from 'styled-components';
-import {
-  createUserWithEmailAndPassword,
-  signInWithPhoneNumber,
-} from "firebase/auth";
+import { RecaptchaVerifier,signInWithEmailAndPassword, signInWithPhoneNumber } from "firebase/auth";
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
@@ -88,6 +85,47 @@ const Div = styled.div`
       margin-top: 24px;
       text-align: center;
     }
+    .form-controll {
+      margin-bottom: 20px;
+      margin-top: 20px;
+
+      input {
+        display: block;
+        font: inherit;
+        color: inherit;
+        width: 100%;
+        padding: 13px 16px;
+        outline: none;
+        border: 1px #ccc solid;
+        border-radius: 6px;
+
+        &::placeholder {
+          color: #aaa;
+        }
+
+        &:focus {
+          border-color: #4a00e0;
+        }
+      }
+
+      .hint {
+        font-size: 13px;
+        margin-top: 2px;
+        margin-left: 4px;
+        color: #ff4646;
+        display: none;
+      }
+
+      &.error {
+        input {
+          border-color: #ff4646;
+        }
+
+        .hint {
+          display: block;
+        }
+      }
+    }
 
     .form {
       margin-top: 32px;
@@ -158,8 +196,43 @@ const Div = styled.div`
           border: 2px solid #fff;
           border-bottom-color: transparent;
           border-radius: 50%;
+           align: center;
           display: block;
           animation: ${rotation} 1s linear infinite;
+        }
+      }
+    }
+    .ext {
+      margin-top: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      button {
+        font: inherit;
+        font-size: 14px;
+        border: none;
+        outline: none;
+        background-color: white;
+        color: #4a00e0;
+        cursor: pointer;
+
+        @media (hover: hover) {
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+
+        @media (hover: none) {
+          &:active {
+            text-decoration: underline;
+          }
+        }
+
+        .icon {
+          margin-left: 3px;
+          width: 18px;
+          height: 18px;
         }
       }
     }
@@ -199,17 +272,15 @@ const Div = styled.div`
 `;
 
 const SignUp = () => {
-  const [nameInput, setNameInput] = useState('');
-  const [emailInput, setEmailInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
+ 
+  
+  const [show, setshow] = useState(false);
+  const [otp, setotp] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
-  const [startNameValidation, setStartNameValidation] = useState(false);
-  const [startEmailValidation, setStartEmailValidation] = useState(false);
-  const [startPasswordValidation, setStartPasswordValidation] = useState(false);
   const [startPhoneValidation, setStartPhoneValidation] = useState(false);
   const [serverErrorMessage, setServerErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
 
@@ -217,85 +288,80 @@ const SignUp = () => {
     router.replace('/collections');
   }
 
-  const isNameValid = nameInput.length !== 0;
-  const isEmailValid = emailInput.length !== 0 && validateEmail(emailInput);
-  const isPasswordValid =
-    passwordInput.length !== 0 && validatePassword(passwordInput);
+  
     const isPhoneValid =
       phoneInput.length !== 0 && validatePhone(phoneInput);
 
-  const nameInputHandler = (ev) => {
-    setServerErrorMessage('');
-    setNameInput(ev.target.value);
-  };
-
-  const emailInputHandler = (ev) => {
-    setServerErrorMessage('');
-    setEmailInput(ev.target.value);
-  };
-
-  const passwordInputHandler = (ev) => {
-    setServerErrorMessage('');
-    setPasswordInput(ev.target.value);
-  };
+  
   const phoneInputHandler = (ev) => {
     setServerErrorMessage("");
     setPhoneInput(ev.target.value);
   };
 
+  
+
+  const generateRecaptcha = () => {
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "invisible",
+        callback: (response) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+          // ...
+        },
+      },
+      auth
+    );
+  };
+   const ValidateOtp = (e) => {
+     let otp = e.target.value;
+     setotp(otp);
+     if (otp.length === 6) {
+       console.log(otp);
+
+       let confirmationResult = window.confirmationResult;
+
+       confirmationResult
+         .confirm(otp)
+         .then((result) => {
+           // User signed in successfully.
+           const user = result.user;
+           
+           // ...
+         })
+         .catch((error) => {
+           // User couldn't sign in (bad verification code?)
+           // ...
+           console.log(error);
+         });
+     }
+   };
+  
+
   const submitHandler = (ev) => {
     ev.preventDefault();
 
-    setStartNameValidation(true);
-    setStartEmailValidation(true);
-    setStartPasswordValidation(true);
+    
     setStartPhoneValidation(true);
 
-    if (isNameValid && isEmailValid && isPasswordValid && isPhoneValid && !serverErrorMessage) {
+    if (isPhoneValid && !serverErrorMessage) {
       setIsLoading(true);
-      createUserWithEmailAndPassword(auth, emailInput, passwordInput)
        
-        .then((userCredential) => {
-          const uid = userCredential.user.uid;
-          setDoc(doc(db, uid, "account"), {
-            name: nameInput,
-            email: emailInput,
-            phone: phoneInput,
-          })
-            .then(() => {
-              setDoc(doc(db, uid, "wishlist"), {
-                items: [],
-              }).then(() => {
-                setDoc(doc(db, uid, "cart"), {
-                  items: [],
-                });
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            })
-            .catch((error) => {
-              const errorCode = error.code;
-
-              if (errorCode === "auth/email-already-in-use") {
-                setServerErrorMessage("Email address already in use.");
-              } else {
-                setServerErrorMessage("Something went wrong.");
-              }
-            });
+       generateRecaptcha();
+       let appVerifier = window.recaptchaVerifier;
+      signInWithPhoneNumber(auth, phoneInput, appVerifier)
+        .then((confirmationResult) => {
+          window.confirmationResult = confirmationResult;
+          console.log("code sent");
+          setIsLoading(false);
+          setshow(true);
         })
         .catch((error) => {
-          const errorCode = error.code;
-
-          if (errorCode === "auth/email-already-in-use") {
-            setServerErrorMessage("Email address already in use.");
-          } else {
-            setServerErrorMessage("Something went wrong.");
-          }
-        })
-        .finally(() => {
-          setIsLoading(false);
+          // Error; SMS not sent
+          // ...
+          console.log(error);
         });
+       
     }
   };
 
@@ -326,57 +392,14 @@ const SignUp = () => {
               <form className="form" onSubmit={submitHandler}>
                 <div
                   className={`form-control ${
-                    startNameValidation ? (isNameValid ? "" : "error") : ""
-                  }`}
-                >
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    placeholder=" اسمك"
-                    value={nameInput}
-                    onChange={nameInputHandler}
-                    onBlur={() => setStartNameValidation(false)}
-                  />
-                  <span className="hint">Name cannot be empty</span>
-                </div>
-                <div
-                  className={`form-control ${
-                    startEmailValidation ? (isEmailValid ? "" : "error") : ""
-                  }`}
-                >
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="Email,بريدك الأكتروني"
-                    value={emailInput}
-                    onChange={emailInputHandler}
-                    onBlur={() => setStartEmailValidation(false)}
-                  />
-                  <span className="hint">{`${
-                    startEmailValidation
-                      ? emailInput.length === 0
-                        ? "Email cannot be empty"
-                        : !validateEmail(emailInput)
-                        ? "Email is not valid"
-                        : ""
-                      : ""
-                  }`}</span>
-                </div>
-                <div
-                  className={`form-control ${
-                    startPhoneValidation
-                      ? isPhoneValid
-                        ? ""
-                        : "error"
-                      : ""
+                    startPhoneValidation ? (isPhoneValid ? "" : "error") : ""
                   }`}
                 >
                   <input
                     type="phone"
                     name="phone"
                     id="phone"
+                    dir="ltr"
                     placeholder="رقم هاتفك "
                     value={phoneInput}
                     onChange={phoneInputHandler}
@@ -392,41 +415,31 @@ const SignUp = () => {
                       : ""
                   }`}</span>
                 </div>
-                <div
-                  className={`form-control ${
-                    startPasswordValidation
-                      ? isPasswordValid
-                        ? ""
-                        : "error"
-                      : ""
-                  }`}
+                <div id="recaptcha-container"></div>
+                {show ? <span> تم ارسالك رسالة نصية الى رقمك</span> : ""}
+                <button
+                  style={{ display: show ? "none" : "block" }}
+                  type="submit"
+                  disabled={isLoading}
                 >
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    placeholder="كلمة المرور"
-                    value={passwordInput}
-                    onChange={passwordInputHandler}
-                    onBlur={() => setStartPasswordValidation(false)}
-                  />
-                  <span className="hint">{`${
-                    startPasswordValidation
-                      ? passwordInput.length === 0
-                        ? "Password cannot be empty"
-                        : !validatePassword(passwordInput)
-                        ? "Min 6 characters required"
-                        : ""
-                      : ""
-                  }`}</span>
-                </div>
-                <button type="submit" disabled={isLoading}>
                   {isLoading ? <span className="loader"></span> : "Sign Up"}
                 </button>
               </form>
-              <p className="info">
-                Do you have an account? <Link href="/signin">Sign In</Link>
-              </p>
+              <div
+                className={`form-controll`}
+                style={{ display: show ? "block" : "none" }}
+              >
+                <input
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="كلمة المرور"
+                  value={otp}
+                  onChange={ValidateOtp}
+                  onBlur={() => setStartPasswordValidation(false)}
+                />
+                <span className="hint"></span>
+              </div>
             </div>
           </>
         )}
