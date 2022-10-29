@@ -2,6 +2,8 @@ import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import OutsideClickHandler from 'react-outside-click-handler';
 import { useRouter } from 'next/router';
+import { db } from '../services/firebase-config';
+import { doc, getDoc } from "firebase/firestore";
 
 const Div = styled.div`
   border: 1px #eee solid;
@@ -76,6 +78,8 @@ const Menu = ({ onClose, onSignOut }) => {
     router.push('/cart');
     onClose();
   };
+
+
 
   return (
     <Div>

@@ -7,7 +7,6 @@ import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import uniqid from "uniqid";
 import { database } from "../services/firebase-config";
 import { ref, child, get } from "firebase/database";
-
 import EmptyCart from "../components/EmptyCart";
 import CartItemCard from "../components/CartItemCard";
 import SignInPromptTemplate from "../components/SignInPromptTemplate";

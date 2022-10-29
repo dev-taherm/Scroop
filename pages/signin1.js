@@ -2,19 +2,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import styled, { keyframes } from 'styled-components';
-import { RecaptchaVerifier,signInWithEmailAndPassword, signInWithPhoneNumber } from "firebase/auth";
-import { doc, setDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
 
 import { LogoIcon } from '../assets/icons';
-import {
-  validateEmail,
-  validatePassword,
-  validatePhone,
-} from "../utils/formValidation";
+import { validateEmail, validatePassword } from '../utils/formValidation';
 import { auth } from '../services/firebase-config';
-import { db } from '../services/firebase-config';
 
 const MainNav = styled.div`
   font-size: 14px;
@@ -51,6 +45,7 @@ const Div = styled.div`
 
   p {
     line-height: 1.6;
+    text-align: center;
 
     .bold {
       font-weight: 600;
@@ -84,47 +79,6 @@ const Div = styled.div`
       padding: 13px;
       margin-top: 24px;
       text-align: center;
-    }
-    .form-controll {
-      margin-bottom: 20px;
-      margin-top: 20px;
-
-      input {
-        display: block;
-        font: inherit;
-        color: inherit;
-        width: 100%;
-        padding: 13px 16px;
-        outline: none;
-        border: 1px #ccc solid;
-        border-radius: 6px;
-
-        &::placeholder {
-          color: #aaa;
-        }
-
-        &:focus {
-          border-color: #4a00e0;
-        }
-      }
-
-      .hint {
-        font-size: 13px;
-        margin-top: 2px;
-        margin-left: 4px;
-        color: #ff4646;
-        display: none;
-      }
-
-      &.error {
-        input {
-          border-color: #ff4646;
-        }
-
-        .hint {
-          display: block;
-        }
-      }
     }
 
     .form {
@@ -174,6 +128,7 @@ const Div = styled.div`
 
       button {
         font: inherit;
+        border-radius: 6px;
         background: #8e2de2;
         background: -webkit-linear-gradient(to right, #8e2de2, #4a00e0);
         background: linear-gradient(to right, #8e2de2, #4a00e0);
@@ -186,22 +141,30 @@ const Div = styled.div`
         height: 45px;
         outline: none;
         cursor: pointer;
+        padding: 14px 28px;
         border: none;
-        border-radius: 6px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-
-        .loader {
-          width: 18px;
-          height: 18px;
-          border: 2px solid #fff;
-          border-bottom-color: transparent;
-          border-radius: 50%;
-           align: center;
-          display: block;
-          animation: ${rotation} 1s linear infinite;
-        }
       }
     }
+
+    .loader {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #fff;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: block;
+      animation: ${rotation} 1s linear infinite;
+
+      &.small {
+        margin-left: 8px;
+        width: 14px;
+        height: 14px;
+        border: 1.5px solid #4a00e0;
+        border-bottom-color: transparent;
+      }
+    }
+
     .ext {
       margin-top: 32px;
       display: flex;
@@ -238,7 +201,7 @@ const Div = styled.div`
     }
 
     .info {
-      margin-top: 32px;
+      margin-top: 24px;
       margin-bottom: 16px;
       text-align: center;
       font-size: 14px;
@@ -271,16 +234,19 @@ const Div = styled.div`
   }
 `;
 
-const SignUp = () => {
- 
-  
-  const [show, setshow] = useState(false);
-  const [otp, setotp] = useState("");
-  const [phoneInput, setPhoneInput] = useState("");
-  const [startPhoneValidation, setStartPhoneValidation] = useState(false);
+const SignIn = () => {
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [startEmailValidation, setStartEmailValidation] = useState(false);
+  const [startPasswordValidation, setStartPasswordValidation] = useState(false);
   const [serverErrorMessage, setServerErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGuestLoading, setIsGuestLoading] = useState(false);
+
+  const isEmailValid = emailInput.length !== 0 && validateEmail(emailInput);
+  const isPasswordValid =
+    passwordInput.length !== 0 && validatePassword(passwordInput);
+
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
 
@@ -288,96 +254,79 @@ const SignUp = () => {
     router.replace('/collections');
   }
 
-  
-    const isPhoneValid =
-      phoneInput.length !== 0 && validatePhone(phoneInput);
-
-  
-  const phoneInputHandler = (ev) => {
-    setServerErrorMessage("");
-    setPhoneInput(ev.target.value);
+  const emailInputHandler = (ev) => {
+    setServerErrorMessage('');
+    setEmailInput(ev.target.value);
   };
 
-  
-
-  const generateRecaptcha = () => {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: (response) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-          // ...
-        },
-      },
-      auth
-    );
+  const passwordInputHandler = (ev) => {
+    setServerErrorMessage('');
+    setPasswordInput(ev.target.value);
   };
-   const ValidateOtp = (e) => {
-     let otp = e.target.value;
-     setotp(otp);
-     if (otp.length === 6) {
-       console.log(otp);
-
-       let confirmationResult = window.confirmationResult;
-
-       confirmationResult
-         .confirm(otp)
-         .then((result) => {
-           // User signed in successfully.
-           const user = result.user;
-           
-           // ...
-         })
-         .catch((error) => {
-           // User couldn't sign in (bad verification code?)
-           // ...
-           console.log(error);
-         });
-     }
-   };
-  
 
   const submitHandler = (ev) => {
     ev.preventDefault();
 
-    
-    setStartPhoneValidation(true);
+    setStartEmailValidation(true);
+    setStartPasswordValidation(true);
 
-    if (isPhoneValid && !serverErrorMessage) {
+    if (isEmailValid && isPasswordValid && !serverErrorMessage) {
       setIsLoading(true);
-       
-       generateRecaptcha();
-       let appVerifier = window.recaptchaVerifier;
-      signInWithPhoneNumber(auth, phoneInput, appVerifier)
-        .then((confirmationResult) => {
-          window.confirmationResult = confirmationResult;
-          console.log("code sent");
-          setIsLoading(false);
-          setshow(true);
-        })
+      signInWithEmailAndPassword(auth, emailInput, passwordInput)
+        .then((user) => {})
         .catch((error) => {
-          // Error; SMS not sent
-          // ...
-          console.log(error);
+          const errorCode = error.code;
+          console.log(errorCode);
+
+          if (errorCode === 'auth/user-not-found') {
+            setServerErrorMessage("Account doesn't exist.");
+          } else if (errorCode === 'auth/wrong-password') {
+            setServerErrorMessage('Invalid password.');
+          } else {
+            setServerErrorMessage('Something went wrong.');
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
-       
     }
+  };
+
+  const signInAsGuestHandler = () => {
+    setIsGuestLoading(true);
+    signInWithEmailAndPassword(auth, 'lovelyguest@fakemail.com', 'lovelyguest')
+      .then((user) => {})
+      .catch((error) => {
+        const errorCode = error.code;
+        console.log(errorCode);
+
+        if (errorCode === 'auth/user-not-found') {
+          setServerErrorMessage("Account doesn't exist.");
+        } else if (errorCode === 'auth/wrong-password') {
+          setServerErrorMessage('Invalid password.');
+        } else {
+          setServerErrorMessage('Something went wrong.');
+        }
+      })
+      .finally(() => {
+        setIsGuestLoading(false);
+      });
   };
 
   return (
     <>
       <Head>
-        <title>Sign Up</title>
+        <title>Sign In</title>
       </Head>
       <MainNav>
-        <Link href="/">القائمة الرئسية</Link> / <span>تسجيل</span>
+        <Link href="/">Home</Link> / <span>Sign In</span>
       </MainNav>
       <Div>
         {user ? (
           <>
             <p>
               You are signed in as <span className="bold">{user.email}</span>.
+              You'll now be redirected.
             </p>
           </>
         ) : (
@@ -392,54 +341,73 @@ const SignUp = () => {
               <form className="form" onSubmit={submitHandler}>
                 <div
                   className={`form-control ${
-                    startPhoneValidation ? (isPhoneValid ? "" : "error") : ""
+                    startEmailValidation ? (isEmailValid ? '' : 'error') : ''
                   }`}
                 >
                   <input
-                    type="phone"
-                    name="phone"
-                    id="phone"
-                    dir="ltr"
-                    placeholder="رقم هاتفك "
-                    value={phoneInput}
-                    onChange={phoneInputHandler}
-                    onBlur={() => setStartPhoneValidation(false)}
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="Email"
+                    value={emailInput}
+                    onChange={emailInputHandler}
+                    onBlur={() => setStartEmailValidation(false)}
                   />
                   <span className="hint">{`${
-                    startPhoneValidation
-                      ? phoneInput.length === 0
-                        ? "ادخل رقم هاتفك"
-                        : !validatePhone(phoneInput)
-                        ? "خطء في رقم الهاتف"
-                        : ""
-                      : ""
+                    startEmailValidation
+                      ? emailInput.length === 0
+                        ? 'Email cannot be empty'
+                        : !validateEmail(emailInput)
+                        ? 'Email is not valid'
+                        : ''
+                      : ''
                   }`}</span>
                 </div>
-                <div id="recaptcha-container"></div>
-                {show ? <span> تم ارسالك رسالة نصية الى رقمك</span> : ""}
-                <button
-                  style={{ display: show ? "none" : "block" }}
-                  type="submit"
-                  disabled={isLoading}
+                <div
+                  className={`form-control ${
+                    startPasswordValidation
+                      ? isPasswordValid
+                        ? ''
+                        : 'error'
+                      : ''
+                  }`}
                 >
-                  {isLoading ? <span className="loader"></span> : "Sign Up"}
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    placeholder="Password"
+                    value={passwordInput}
+                    onChange={passwordInputHandler}
+                    onBlur={() => setStartPasswordValidation(false)}
+                  />
+                  <span className="hint">{`${
+                    startPasswordValidation
+                      ? passwordInput.length === 0
+                        ? 'Password cannot be empty'
+                        : !validatePassword(passwordInput)
+                        ? 'Min 6 characters required'
+                        : ''
+                      : ''
+                  }`}</span>
+                </div>
+                <button type="submit" disabled={isLoading}>
+                  {isLoading ? <span className="loader"></span> : 'Sign In'}
                 </button>
               </form>
-              <div
-                className={`form-controll`}
-                style={{ display: show ? "block" : "none" }}
-              >
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="كلمة المرور"
-                  value={otp}
-                  onChange={ValidateOtp}
-                  onBlur={() => setStartPasswordValidation(false)}
-                />
-                <span className="hint"></span>
+              <div className="ext">
+                <button
+                  type="button"
+                  disabled={isGuestLoading}
+                  onClick={signInAsGuestHandler}
+                >
+                  Continue as Guest
+                </button>
+                {isGuestLoading && <span className="loader small"></span>}
               </div>
+              <p className="info">
+                Don't have an account? <Link href="/signup">Sign Up</Link>
+              </p>
             </div>
           </>
         )}
@@ -448,4 +416,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default SignIn;
