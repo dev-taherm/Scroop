@@ -9,7 +9,8 @@ import { useSelector } from "react-redux";
 
 import { LogoIcon } from "../assets/icons";
 import {
-  validatePhone,
+  validateEmail,
+  validateName,
   validateStreet,
   validateAddress,
 } from "../utils/formValidation";
@@ -217,29 +218,41 @@ const Loaction = () => {
   const [show, setshow] = useState(false);
   const [final, setfinal] = useState("");
   const [addressExists, setAddressExists] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [emailInput, setEmailInput] = useState("");
   const [addressInput, setAddressInput] = useState("");
   const [streetInput, setStreetInput] = useState("");
+  const [startNameValidation, setStartNameValidation] = useState(false);
+  const [startEmailValidation, setStartEmailValidation] = useState(false);
   const [startStreetValidation, setStartStreetValidation] = useState(false);
-  const [startPhoneValidation, setStartPhoneValidation] = useState(false);
   const [startAddressValidation, setStartAddressValidation] = useState(false);
   const [serverErrorMessage, setServerErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isTopp, setIsTopp] = useState(false);
+   const [isLoadingg, setIsLoadingg] = useState(false);
 
-  const counteryCode ="+967";
+  
+
+ 
 
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
-  //const getStreets = data.streets;
-
+  const isNameValid = nameInput.length !== 0 && validateName(nameInput);
+  const isEmailValid = emailInput.length !== 0;
   const isAddressValid =
     addressInput.length !== 0 && validateAddress(addressInput);
   const isStreetValid = streetInput.length !== 0 && validateStreet(streetInput);
-  const isPhoneValid = phoneInput.length !== 0 && validatePhone(phoneInput);
 
-  const phoneInputHandler = (ev) => {
+ if(isLoadingg){
+    router.replace("/cart");
+ }
+
+  const nameInputHandler = (ev) => {
     setServerErrorMessage("");
-    setPhoneInput(ev.target.value);
+    setNameInput(ev.target.value);
+  };
+  const emailInputHandler = (ev) => {
+    setServerErrorMessage("");
+    setEmailInput(ev.target.value);
   };
   const addressInputHandler = (ev) => {
     setServerErrorMessage("");
@@ -249,114 +262,36 @@ const Loaction = () => {
     setServerErrorMessage("");
     setStreetInput(ev.target.value);
   };
-  const generateRecaptcha = () => {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: (response) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-          // ...
-        },
-      },
-      auth
-    );
-  }
+ 
 
-  const sign = (e) => {
-
-    setStartStreetValidation(true);
-    setStartPhoneValidation(true);
+  const sign = () => {
+    setStartNameValidation(true);
+    setStartEmailValidation(true);
     setStartAddressValidation(true);
-
-    e.preventDefault();
-    if (
-      isAddressValid &&
-      isStreetValid &&
-      isPhoneValid &&
-      !serverErrorMessage
-    ) {
-      setshow(true);
-      generateRecaptcha();
-      let appVerifier = window.recaptchaVerifier;
-      signInWithPhoneNumber(auth, phoneInput, appVerifier)
-        .then((confirmationResult) => {
-          // SMS sent. Prompt user to type the code from the message, then sign the
-          // user in with confirmationResult.confirm(code).
-          window.confirmationResult = confirmationResult;
-          console.log("code sent");
-          // ...
-        })
-        .catch((error) => {
-          // Error; SMS not sent
-          // ...
-          console.log(error);
-        });
-    }
-  };
-
-  const ValidateOtp = (e) => {
-    let otp = e.target.value;
-    setotp(otp);
-    if (otp.length === 6) {
-      console.log(otp);
-
-      let confirmationResult= window.confirmationResult;
-
-      confirmationResult
-        .confirm(otp)
-        .then((result) => {
-          // User signed in successfully.
-          const user = result.user;
-          addAddress();
-          // ...
-        })
-        .catch((error) => {
-          // User couldn't sign in (bad verification code?)
-          // ...
-          console.log(error);
-        });
-    }
-  };
-  if (user) {
-    const uid = user.uid;
-    const dbRef = ref(database);
-    get(child(dbRef, `address/${uid}`))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          console.log(snapshot.val());
-          setAddressExists(snapshot.exists());
-        } else {
-          console.log("No data available");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
-  const addAddress = () => {
+    setStartStreetValidation(true);
     
 
-    
-
+  
     if (
+      isStreetValid&&
+      isNameValid &&
+      isEmailValid &&
       isAddressValid &&
-      isStreetValid &&
-      isPhoneValid &&
       !serverErrorMessage
     ) {
       setIsLoading(true);
-      const email = user.email;
+      
       const uid = user.uid;
 
       set(ref(database, "address/" + uid), {
-        email: email,
+        name: nameInput,
+        email: emailInput,
         street: streetInput,
-        phone: phoneInput,
         address: addressInput,
       })
-        .then(() => {})
+        .then(() => {
+          console.log("added");
+        })
         .catch((error) => {
           console.log(error);
         })
@@ -371,9 +306,29 @@ const Loaction = () => {
         })
         .finally(() => {
           setIsLoading(false);
+          setIsLoadingg(true);
         });
     }
+    console.log("prssed");
+   
   };
+
+  if (user) {
+    const uid = user.uid;
+    const dbRef = ref(database);
+    get(child(dbRef, `address/${uid}`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          
+          setAddressExists(snapshot.exists());
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 
   return (
     <>
@@ -405,7 +360,59 @@ const Loaction = () => {
               {serverErrorMessage && (
                 <div className="server">{serverErrorMessage}</div>
               )}
-              <form className="form" >
+              <form className="form">
+                <div
+                  className={`form-control ${
+                    startNameValidation ? (isNameValid ? "" : "error") : ""
+                  }`}
+                >
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    placeholder=" ادخل أسمك با الكامل"
+                    value={nameInput}
+                    onChange={nameInputHandler}
+                    onBlur={() => setStartNameValidation(false)}
+                  />
+                  <span className="hint">{`${
+                    startNameValidation
+                      ? nameInput.length === 0
+                        ? "ادخل رقم هاتفك"
+                        : !validateName(nameInput)
+                        ? "خطء في رقم الهاتف"
+                        : ""
+                      : ""
+                  }`}</span>
+                </div>
+                <div
+                  className={`form-control ${
+                    startEmailValidation
+                      ? isEmailValid
+                        ? ""
+                        : "error"
+                      : ""
+                  }`}
+                >
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder=" ادخل بريدك الاكتروني"
+                    value={emailInput}
+                    onChange={emailInputHandler}
+                    onBlur={() => setStartEmailValidation(false)}
+                  />
+                  <span className="hint">{`${
+                    startEmailValidation
+                      ? emailInput.length === 0
+                        ? "ادخل رقم هاتفك"
+                        : !validateEmail(emailInput)
+                        ? "خطء في رقم الهاتف"
+                        : ""
+                      : ""
+                  }`}</span>
+                </div>
                 <div
                   className={`form-control ${
                     startAddressValidation
@@ -428,7 +435,7 @@ const Loaction = () => {
                     startAddressValidation
                       ? addressInput.length === 0
                         ? "ادخل رقم هاتفك"
-                        : !validatePhone(addressInput)
+                        : !validateAddress(addressInput)
                         ? "خطء في رقم الهاتف"
                         : ""
                       : ""
@@ -459,63 +466,22 @@ const Loaction = () => {
                     startStreetValidation
                       ? streetInput.length === 0
                         ? "ادخل رقم هاتفك"
-                        : !validatePhone(streetInput)
+                        : !validateAddress(addressInput)
                         ? "خطء في رقم الهاتف"
                         : ""
                       : ""
                   }`}</span>
                 </div>
 
-                <div
-                  className={`form-control ${
-                    startPhoneValidation ? (isPhoneValid ? "" : "error") : ""
-                  }`}
-                >
-                  <input
-                    type="phone"
-                    name="phone"
-                    id="phone"
-                    dir="ltr"
-                    placeholder="رقم هاتفك "
-                    value={phoneInput}
-                    onChange={phoneInputHandler}
-                    onBlur={() => setStartPhoneValidation(false)}
-                  />
-                  <span className="hint">{`${
-                    startPhoneValidation
-                      ? phoneInput.length === 0
-                        ? "ادخل رقم هاتفك"
-                        : !validatePhone(phoneInput)
-                        ? "خطء في رقم الهاتف"
-                        : ""
-                      : ""
-                  }`}</span>
-                </div>
-                <div id="recaptcha-container"></div>
-                <button type="submit" onClick={sign}>
-                  Send OTP
+                <button onClick={sign} disabled={isLoading}>
+                  {isLoading ? (
+                    <span className="loader"></span>
+                  ) : addressExists ? (
+                    "عدل  "
+                  ) : (
+                    "أضف "
+                  )}
                 </button>
-                <div style={{ display: show ? "block" : "none" }}>
-                  <input
-                    type="text"
-                    placeholder={"Enter your OTP"}
-                    onChange={ValidateOtp}
-                    value={otp}
-                  ></input>
-                  <button
-                    type="submit"
-                    onClick={ValidateOtp}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <span className="loader"></span>
-                    ) : addressExists ? (
-                      "عدل  "
-                    ) : (
-                      "أضف "
-                    )}
-                  </button>
-                </div>
               </form>
             </div>
           </>

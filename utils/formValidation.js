@@ -18,3 +18,6 @@ export const validateStreet = (street) => {
 export const validateAddress = (address) => {
   return address.length >= 15;
 };
+export const validateName = (name) => {
+  return name.length >= 15;
+};

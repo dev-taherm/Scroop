@@ -1,23 +1,28 @@
-import { useState } from 'react';
-import Link from 'next/link';
-import Head from 'next/head';
-import styled, { keyframes } from 'styled-components';
-import { RecaptchaVerifier,signInWithEmailAndPassword, signInWithPhoneNumber } from "firebase/auth";
-import { doc, setDoc } from 'firebase/firestore';
-import { useRouter } from 'next/router';
-import { useSelector } from 'react-redux';
+import { useState } from "react";
+import Link from "next/link";
+import Head from "next/head";
+import styled, { keyframes } from "styled-components";
+import {
+  RecaptchaVerifier,
+  signInWithEmailAndPassword,
+  signInWithPhoneNumber,
+} from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import {  child, get } from "firebase/database";
+import { useRouter } from "next/router";
+import { useSelector } from "react-redux";
 import { ref, set } from "firebase/database";
 import { database } from "../services/firebase-config";
-import { LogoIcon } from '../assets/icons';
+import { LogoIcon } from "../assets/icons";
 import {
   validateEmail,
   validatePassword,
   validatePhone,
 } from "../utils/formValidation";
-import { auth } from '../services/firebase-config';
-import { db } from '../services/firebase-config';
+import { auth } from "../services/firebase-config";
+import { db } from "../services/firebase-config";
 import Input from "react-phone-number-input/input";
-import { size } from 'polished';
+import { size } from "polished";
 
 const MainNav = styled.div`
   font-size: 14px;
@@ -199,7 +204,7 @@ const Div = styled.div`
           border: 2px solid #fff;
           border-bottom-color: transparent;
           border-radius: 50%;
-           align: center;
+          align: center;
           display: block;
           animation: ${rotation} 1s linear infinite;
         }
@@ -275,33 +280,26 @@ const Div = styled.div`
 `;
 
 const SignUp = () => {
- 
-  
   const [show, setshow] = useState(false);
   const [otp, setotp] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [startPhoneValidation, setStartPhoneValidation] = useState(false);
-  const [serverErrorMessage, setServerErrorMessage] = useState('');
+  const [serverErrorMessage, setServerErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isGuestLoading, setIsGuestLoading] = useState(false);
+  const [userExists, setUserExists] = useState("");
   const router = useRouter();
   const user = useSelector((state) => state.auth.user);
 
   if (user) {
-    router.replace('/collections');
+    router.replace("/collections");
   }
 
-  
-    const isPhoneValid =
-      phoneInput && validatePhone(phoneInput);
+  const isPhoneValid = phoneInput && validatePhone(phoneInput);
 
-  
   const phoneInputHandler = (ev) => {
     setServerErrorMessage("");
     setPhoneInput(ev.target.value);
   };
-
-  
 
   const generateRecaptcha = () => {
     window.recaptchaVerifier = new RecaptchaVerifier(
@@ -316,58 +314,72 @@ const SignUp = () => {
       auth
     );
   };
-   const ValidateOtp = (e) => {
-     let otp = e.target.value;
-     setotp(otp);
-     if (otp.length === 6) {
-       console.log(otp);
-       
-
-       let confirmationResult = window.confirmationResult;
-
-       confirmationResult
-         .confirm(otp)
-         .then((result) => {
-           // User signed in successfully.
-           const user = result.user;
-           const uid = user.uid;
-           setDoc(doc(db, uid, "wishlist"), {
-             items: [],
-           })
-             .then(() => {
-               setDoc(doc(db, uid, "cart"), {
-                 items: [],
-               }).then(()=>{
-                set(ref(database, "address/" + uid), {
-                  phone: phoneInput,
-                  
-                })
-               })
-
-               // ...
-             })
-
-            })
-         .catch((error) => {
-           // User couldn't sign in (bad verification code?)
-           // ...
-           console.log(error);
-         });
-     }
-   };
+ 
+   
   
+
+  const ValidateOtp = (e) => {
+    let otp = e.target.value;
+    setotp(otp);
+    if (otp.length === 6) {
+      console.log(otp);
+
+      let confirmationResult = window.confirmationResult;
+
+      confirmationResult
+        .confirm(otp)
+        .then((result) => {
+          // User signed in successfully.
+          const user = result.user;
+          const uid = user.uid;
+          
+           const dbRef = ref(database);
+           get(child(dbRef, `users/${uid}`))
+             .then((snapshot) => {
+               if (snapshot.exists()) {
+                 console.log(snapshot.val());
+                
+               } else {
+                 console.log("No data available");
+                  setDoc(doc(db, uid, "wishlist"), {
+                    items: [],
+                  }).then(() => {
+                    setDoc(doc(db, uid, "cart"), {
+                      items: [],
+                    }).then(() => {
+                      set(ref(database, "users/" + uid), {
+                        phone: phoneInput,
+                      });
+                    });
+
+                    // ...
+                  });
+               }
+             })
+             .catch((error) => {
+               console.error(error);
+             });
+          
+          
+        })
+        .catch((error) => {
+          // User couldn't sign in (bad verification code?)
+          // ...
+          console.log(error);
+        });
+    }
+  };
 
   const submitHandler = (ev) => {
     ev.preventDefault();
 
-    
     setStartPhoneValidation(true);
 
     if (isPhoneValid && !serverErrorMessage) {
       setIsLoading(true);
-       
-       generateRecaptcha();
-       let appVerifier = window.recaptchaVerifier;
+
+      generateRecaptcha();
+      let appVerifier = window.recaptchaVerifier;
       signInWithPhoneNumber(auth, phoneInput, appVerifier)
         .then((confirmationResult) => {
           window.confirmationResult = confirmationResult;
@@ -380,7 +392,6 @@ const SignUp = () => {
           // ...
           console.log(error);
         });
-       
     }
   };
 
@@ -414,7 +425,8 @@ const SignUp = () => {
                     startPhoneValidation ? (isPhoneValid ? "" : "error") : ""
                   }`}
                 >
-                  967+<Input
+                  967+
+                  <Input
                     type="phone"
                     name="phone"
                     id="phone"
