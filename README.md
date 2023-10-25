@@ -29,6 +29,4 @@ An online shopping application built using Next.js and Firebase.
 - [Styled components](https://www.styled-components.com)
 - [Firebase](https://firebase.google.com)
 
-## Licence
 
-This project is licensed under [MIT](LICENSE).
